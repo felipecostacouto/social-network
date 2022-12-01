@@ -1,6 +1,6 @@
 # app/Dockerfile
 
-FROM python:3.9-slim
+FROM python:3.7-slim
 
 EXPOSE 8501
 
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/streamlit/streamlit-example.git .
+RUN git clone https://github.com/BSBContreras/social-network.git .
 
 RUN pip3 install -r requirements.txt
 
