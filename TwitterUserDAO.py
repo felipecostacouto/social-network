@@ -8,7 +8,7 @@ from SingletonMeta import SingletonMeta
 class TwitterUserDAO(metaclass=SingletonMeta):
 
     def __init__(self):
-        self.database = pickledb.load('database_twitter.pickle', False)
+        self.database = pickledb.load('database_twitter.pickle', auto_dump=False, sig=False)
 
     def get_user(self, username):
         response = self.database.get(username)

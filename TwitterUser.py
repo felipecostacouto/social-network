@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+
 from tweepy import Client
 
 from PrestigeHandler import PrestigeHandler
@@ -8,7 +11,9 @@ from TwitterUserDAO import TwitterUserDAO
 class ClientHandler(metaclass=SingletonMeta):
 
     def __init__(self):
-        bearer_token = 'AAAAAAAAAAAAAAAAAAAAAAJ1ggEAAAAA8X01El%2FEBkIBAJKlE8wJzT%2BrhfQ%3D7DD6tWwONqF6zDZRTga8H6PAiLWR8ksL7e8pmA4z6QVSJRxaLB'
+        load_dotenv()
+        bearer_token = os.getenv('bearer_token_1')
+        print(bearer_token)
         self.client = Client(bearer_token=bearer_token)
 
     def get_client(self):
@@ -22,17 +27,22 @@ class TweepyHandler:
         self.client = clientHandler.get_client()
 
     def get_user(self, username):
-        print('request user twitter', username)
+        print('request user', username)
         response = self.client.get_user(username=username)
 
         if response.data is None:
-            raise Exception('User not found')
+            raise Exception('Usuário não encontrado')
 
         return response.data
 
     def get_users_following(self, user_id):
-        print('request following twitter')
-        return self.client.get_users_following(id=user_id).data
+        print('request follow', user_id)
+        response = self.client.get_users_following(id=user_id)
+
+        if response.data is None:
+            raise Exception('A conta é privada')
+
+        return response.data
 
     def get_users_tweets(self, user_id):
         return self.client.get_users_tweets(id=user_id).data
@@ -46,20 +56,19 @@ class TwitterUser:
         self.name = None
         self.username = None
         self.prestige = None
+        self.following = None
 
         self.twitterUserDAO = TwitterUserDAO()
-
         username = user.username if user is not None else username[1:]
-        print(username)
         response = self.twitterUserDAO.get_user(username)
-        if response is not False:
-            self.create_twitter_user(response)
-            return
 
-        if user is not None:
-            self.constructor_by_user(user)
+        if response:
+            self.create_twitter_user(response)
         else:
-            self.constructor_by_username(username)
+            if user is not None:
+                self.constructor_by_user(user)
+            else:
+                self.constructor_by_username(username)
 
     def create_twitter_user(self, data):
         self.id = data['id']
@@ -88,7 +97,11 @@ class TwitterUser:
 
     def get_users_following(self):
         tweepy_handler = TweepyHandler()
-        return [TwitterUser(user=user) for user in tweepy_handler.get_users_following(self.id)]
+        if self.following:
+            return self.following
+        else:
+            self.following = [TwitterUser(user=user) for user in tweepy_handler.get_users_following(self.id)]
+        return self.following
 
     def get_users_tweets(self):
         tweepy_handler = TweepyHandler()
