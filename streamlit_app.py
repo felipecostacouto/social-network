@@ -12,8 +12,6 @@ st.write("""
     Digite abaixo seu usuário do twitter
 """)
 
-
-
 username = st.text_input('Digite seu @ do twitter')
 
 if re.search(r'^(@)(\w{1,15})$', username):
@@ -47,3 +45,4 @@ if re.search(r'^(@)(\w{1,15})$', username):
 else:
     if username:
         st.error('Por favor preencha um usuário válido')
+

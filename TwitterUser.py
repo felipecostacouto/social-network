@@ -12,7 +12,7 @@ class ClientHandler(metaclass=SingletonMeta):
 
     def __init__(self):
         load_dotenv()
-        bearer_token = os.getenv('bearer_token_1')
+        bearer_token = os.getenv('bearer_token')
         print(bearer_token)
         self.client = Client(bearer_token=bearer_token)
 
@@ -83,8 +83,14 @@ class TwitterUser:
         self.constructor_by_user(user)
 
     def constructor_by_user(self, user):
-        prestige_handler = PrestigeHandler()
-        prestige = prestige_handler.get_user_prestige(user)
+        tweepy_handler = TweepyHandler()
+        tweets = tweepy_handler.get_users_tweets(user_id=user.id)
+
+        if tweets:
+            prestige_handler = PrestigeHandler(tweets)
+            prestige = prestige_handler.get_user_prestige()
+        else:
+            prestige = 0
 
         user_data = dict()
         user_data['id'] = user.id
@@ -103,9 +109,13 @@ class TwitterUser:
             self.following = [TwitterUser(user=user) for user in tweepy_handler.get_users_following(self.id)]
         return self.following
 
-    def get_users_tweets(self):
+    def get_users_tweets(self, user_id=None):
+
         tweepy_handler = TweepyHandler()
-        return tweepy_handler.get_users_tweets(self.id)
+        user_id = user_id if user_id else self.id
+        return tweepy_handler.get_users_tweets(user_id)
+
+
 
     def get_user_prestige(self):
         return self.prestige
